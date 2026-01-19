@@ -1,5 +1,4 @@
 from flask import Flask, jsonify, request
-import requests
 import counter as cntr
 import time
 
@@ -37,7 +36,7 @@ def validate():
     INTERNAL ONLY.
     """
     result = stamper.validate_get()
-    return jsonify({"counter_start": result})
+    return jsonify({"epoch_start": result})
 
 @app.route("/stamp", methods=["POST"])
 def stamp():
