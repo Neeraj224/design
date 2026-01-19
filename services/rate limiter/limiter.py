@@ -10,6 +10,10 @@ COUNTER_URL = HOME_URL + ":" + COUNTER_PORT
 CACHE_URL = HOME_URL + ":" + CACHE_PORT
 
 TOKEN_LIMIT = 10
+# refill every 5 minutes = 5 * 60 = 300 seconds
+REFILL_INTERVAL = 300
+# we refill with only 1 token every interval
+REFILL_AMOUNT = 1
 
 app = Flask(__name__)
 
@@ -47,7 +51,45 @@ class Limiter:
         return response
     
     def update_tokens(self, user_id):
-        return
+        """
+        Update tokens in the cache for a given user based on
+        elapsed time.
+        """
+        # first we fetch the current state from cache:
+        response = requests.get(CACHE_URL + "/get-cache/" + user_id)
+        if response.status_code == 404:
+            print("Cache Miss; creating tokens for the user_id" + user_id)
+            self.create_tokens(user_id=user_id)
+            # no refill needed since we just created
+            return
+        
+        response.raise_for_status()
+        data = response.json()
+        
+        tokens = data["tokens"]
+        last_refill_ts = data["last_refill_ts"]
+        
+        # now we calculate the elapsed time:
+        current_time = time.time()
+        elapsed_time = current_time - last_refill_ts
+        
+        # see how many tokens to add
+        refill_count = int(elapsed_time // REFILL_INTERVAL) * REFILL_AMOUNT
+        
+        # now we only update cache if tokens are added
+        if refill_count > 0:
+            tokens = min(tokens + refill_count, TOKEN_LIMIT)
+            last_refill_ts = current_time
+            
+            payload = {
+                "tokens": tokens,
+                "last_refill_ts": last_refill_ts
+            }
+            
+            response = requests.post(CACHE_URL + "/set-cache/" + user_id, json = payload)
+            response.raise_for_status()
+        
+        return tokens
     
     def build_record(self, request, counter_url):
         '''
