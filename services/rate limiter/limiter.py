@@ -2,6 +2,10 @@ from flask import Flask, jsonify, request
 import time
 import requests
 
+HOME_URL = "http://127.0.0.1"
+COUNTER_PORT = "5001"
+COUNTER_URL = HOME_URL + ":" + COUNTER_PORT
+
 app = Flask(__name__)
 
 class Limiter:
@@ -19,6 +23,7 @@ class Limiter:
         # over here - but when do we actually
         # update the cache?
         # and what about start-up situations?
+        
         return
     
     def update_tokens(self, user_id):
@@ -51,9 +56,8 @@ class Limiter:
         return response.json()
     
 limiter = Limiter()
-COUNTER_URL = "http://127.0.0.1:5001"
 
-@app.route("/test-epoch", methods=["GET"])
+@app.route("/get-epoch", methods=["GET"])
 def test_epoch():
     try:
         epoch = limiter.fetch_epoch(COUNTER_URL)
