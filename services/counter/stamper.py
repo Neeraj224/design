@@ -23,6 +23,7 @@ class Stamper:
             "timestamp": time.time()
         }
         self.timestamped_record = record
+        print(record)
         return record
 
 # now we first create an instance of our class Stamper:
