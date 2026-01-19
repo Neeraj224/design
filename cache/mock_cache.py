@@ -43,6 +43,8 @@ def list_cache():
 @app.route("/get-cache/<key>", methods=["GET"])
 def get_key(key):
     response = mockCache.get(key)
+    if response is None:
+        return jsonify({"error": "Cache Miss"}), 404
     return jsonify(response)
 
 @app.route("/set-cache/<key>", methods=["POST"])
