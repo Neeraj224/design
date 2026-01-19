@@ -130,20 +130,24 @@ def test_epoch():
 
 @app.route("/stamped-request", methods=["POST"])
 def stamp_request():
-    stamped_request = None
     try:
         stamped_request = limiter.build_record(request, COUNTER_URL)
-
-        """
-        ------------ Beginning of test code ------------
-        """
         user_id = stamped_request["user_id"]
-        response = limiter.fetch_tokens(user_id)
-        """
-        ------------ End of test code ------------
-        """
-            
+
+        # Step 1: Refill tokens if needed
+        tokens = limiter.update_tokens(user_id)
+
+        # Step 2: Check if request is allowed
+        if tokens <= 0:
+            return jsonify({"error": "Too Many Requests"}), 429
+
+        # Step 3: Deduct token for this request
+        tokens -= 1
+        payload = {"tokens": tokens, "last_refill_ts": time.time()}
+        requests.post(CACHE_URL + "/set-cache/" + user_id, json=payload)
+
         return jsonify(stamped_request)
+
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
