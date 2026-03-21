@@ -1,6 +1,6 @@
 # Really Bad Design
 
-Welcome to **Really Bad Design** - my chaotic playground for learning everything from high to low-level network-based design and microservices.  
+Welcome to **Really Bad Design** - a repo for learning everything, from high to low-level network-based design and microservices.  
 
 > **Disclaimer:** This repo is intentionally bad because it’s experimental. That’s the point.  
 
